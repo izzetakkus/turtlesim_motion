@@ -13,16 +13,21 @@
 #include <cmath>
 
 ros::Publisher velocity_publisher;
+ros::Subscriber pose_subscriber;
 
 void mySigintHandler(int);
 void move(double speed, double distance, bool isForward);
 void rotate(double angular_speed,double angle, bool clockwise);
 double degree2radian(double angle_in_degree);
-void poseCallback(turtlesim::Pose msg);
+void poseCallback(const turtlesim::PoseConstPtr & pose_message);
+void setDesiredOrientation(double desired_angle_radians);
+
 
 double x{0};
 double y{0};
 double yaw{0};
+
+turtlesim::Pose turtlesim_pose;
 
 using namespace std;
  
@@ -38,23 +43,27 @@ int main(int argc, char  **argv )
     double distance{0.0};
     bool isForward{true},clockwise{true};
 
-    ros::Subscriber sub = node.subscribe("/turtle1/pose", 1000, poseCallback);
+    pose_subscriber = node.subscribe("/turtle1/pose", 1000, poseCallback);
     ros::spinOnce();
 
     velocity_publisher = node.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel", 10);
-    // cout << "Enter the speed: ";
-    // cin >> speed;
 
-    // cout << "Enter the desired distance: ";
-    // cin >> distance;
+    /*
+    cout << "Enter the speed: ";
+    cin >> speed;
 
-    // cout << "Select the direction" << endl;
-    // cout << "[0] -----> Backward\n[1]-----> Forward" << endl;
-    // cin >> isForward;
+    cout << "Enter the desired distance: ";
+    cin >> distance;
 
-    // move(speed, distance , isForward);
+    cout << "Select the direction" << endl;
+    cout << "[0] -----> Backward\n[1]-----> Forward" << endl;
+    cin >> isForward;
 
+    move(speed, distance , isForward);
 
+    */
+
+    /*
     cout << "Enter the angular velocity (degree/sec): ";
     cin >> angular_speed;
 
@@ -66,7 +75,18 @@ int main(int argc, char  **argv )
     cin >> clockwise;
 
     rotate(degree2radian(angular_speed), degree2radian(angle), clockwise);
+    
+    */
 
+
+    setDesiredOrientation(degree2radian(120));
+    ros::Rate loop_rate(0.5);
+    loop_rate.sleep();
+    setDesiredOrientation(degree2radian(-60));
+    loop_rate.sleep();
+    setDesiredOrientation(degree2radian(0));
+
+    
     return 0;
 }
 
@@ -147,13 +167,24 @@ void rotate(double angular_speed,double angle, bool clockwise){
 }
 
 
-void poseCallback(turtlesim::Pose msg){
-   x = msg.x;
-   y = msg.y;
-   yaw = msg.theta;
+void poseCallback(const turtlesim::PoseConstPtr & pose_message){
+    
+    turtlesim_pose.x = pose_message->x;
+    turtlesim_pose.y = pose_message->y;
+    turtlesim_pose.theta = pose_message->theta;
+
 }
+
 
 
 double degree2radian(double angle_in_degree){
     return angle_in_degree * M_PI/180.0;
+}
+
+void setDesiredOrientation(double desired_angle_radians){
+
+    double relative_angle_radians = desired_angle_radians - turtlesim_pose.theta;
+    bool clockwise = (relative_angle_radians<0) ? true:false ;
+    rotate(abs(relative_angle_radians)/4, abs(relative_angle_radians), clockwise);
+
 }
