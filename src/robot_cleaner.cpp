@@ -155,5 +155,5 @@ void poseCallback(turtlesim::Pose msg){
 
 
 double degree2radian(double angle_in_degree){
-    return angle_in_degree * (M_PI/180.0);
+    return angle_in_degree * M_PI/180.0;
 }
