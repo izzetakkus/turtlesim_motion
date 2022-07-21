@@ -22,6 +22,7 @@ void rotate(double angular_speed,double angle, bool clockwise);
 double degree2radian(double angle_in_degree);
 void poseCallback(const turtlesim::PoseConstPtr & pose_message);
 void setDesiredOrientation(double desired_angle_radians);
+double getDistance(double act_x, double act_y, double des_x, double des_y);
 void moveGoal(turtlesim::Pose goal_pose, double distance_tolerance);
 void gridClean();
 void spiralClean();

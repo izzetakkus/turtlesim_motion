@@ -19,6 +19,12 @@ x_max = 11.0
 y_max = 11.0
 
 
+def poseCallback(msg):
+    global x, y, z, yaw
+    x = msg.x
+    y = msg.y
+    yaw = msg.theta
+
 def getDistance(x1,y1,x2,y2):
     return math.sqrt((x1-x2)**2 + (y1-y2)**2)
 
@@ -30,7 +36,6 @@ def setDesiredOrientation(desired_angle_radians,velocity_publisher):
 
     print("relative angle: ",relative_angle_radians)
     
-
     if relative_angle_radians < 0:
         clockwise = True
     else:
@@ -41,62 +46,60 @@ def setDesiredOrientation(desired_angle_radians,velocity_publisher):
 
     # clockwise = True if relative_angle_radians < 0 else False
 
-    rotate(relative_angle_radians, relative_angle_radians, clockwise, velocity_publisher )
+    rotate(abs(relative_angle_radians)/4.0, abs(relative_angle_radians), clockwise, velocity_publisher )
 
-
-def poseCallback(msg):
-    global x, y, z, yaw
-    x = msg.x
-    y = msg.y
-    yaw = msg.theta
 
 def move(speed, desired_distance, is_forward, velocity_publisher):
     #Declare a velocity message to publish
     
-    velocity_message = Twist()
-    global x, y
-    x0 = x
-    y0 = y
+    vel_msg = Twist()
 
     if(is_forward):
-        velocity_message.linear.x = abs(speed)
+        vel_msg.linear.x = abs(speed)
     else:
-        velocity_message.linear.x = -abs(speed)
+        vel_msg.linear.x = -abs(speed)
+
+    vel_msg.linear.y = 0
+    vel_msg.linear.z = 0
+    vel_msg.angular.x = 0
+    vel_msg.angular.y = 0
+    vel_msg.angular.z = 0
+
+    t0 = rospy.Time.now().to_sec()
 
     distance_moved = 0.0
+    
     loop_rate = rospy.Rate(10) #publish the velocity at 10 Hz (10 times per second)
-
-    while(True):
+    
+    while(distance_moved < desired_distance):
+        
         rospy.loginfo("Turtlesim moves forwards")
-        velocity_publisher.publish(velocity_message)
+        velocity_publisher.publish(vel_msg)
+        t1 = rospy.Time.now().to_sec()
+        distance_moved = speed * (t1 - t0)
+        print("Current Distance: ",distance_moved)
         loop_rate.sleep()
-        distance_moved = abs(0.5 * math.sqrt(((x-x0) ** 2) + ((y-y0) ** 2 )))
-        print(distance_moved)
 
-        if not (distance_moved < desired_distance):
-            rospy.loginfo("reached")
-            break
-
-    velocity_message.linear.x = 0
-    velocity_publisher.publish(velocity_message)
+    vel_msg.linear.x = 0
+    velocity_publisher.publish(vel_msg)
 
 def rotate(angular_speed_radians, relative_angle_radians, clockwise, velocity_publisher):
 
     global yaw
-    velocity_message = Twist()
-    velocity_message.linear.x = 0
-    velocity_message.linear.y = 0
-    velocity_message.linear.z = 0
-    velocity_message.angular.x = 0
-    velocity_message.angular.y = 0
-    velocity_message.angular.z = 0
+    vel_msg = Twist()
+    vel_msg.linear.x = 0
+    vel_msg.linear.y = 0
+    vel_msg.linear.z = 0
+    vel_msg.angular.x = 0
+    vel_msg.angular.y = 0
+    vel_msg.angular.z = 0
 
     angular_speed = abs(angular_speed_radians)
 
     if(clockwise):
-        velocity_message.angular.z = -abs(angular_speed) 
+        vel_msg.angular.z = -abs(angular_speed) 
     else:
-        velocity_message.angular.z = abs(angular_speed)
+        vel_msg.angular.z = abs(angular_speed)
     
     loop_rate = rospy.Rate(10)
 
@@ -104,7 +107,7 @@ def rotate(angular_speed_radians, relative_angle_radians, clockwise, velocity_pu
     
     while True:
         rospy.loginfo("Turtlesim rotates")
-        velocity_publisher.publish(velocity_message)
+        velocity_publisher.publish(vel_msg)
 
         t1 = rospy.Time.now().to_sec()
         current_angle_degree = (t1-t0)*angular_speed_radians
@@ -113,8 +116,8 @@ def rotate(angular_speed_radians, relative_angle_radians, clockwise, velocity_pu
         if current_angle_degree > relative_angle_radians:
             rospy.loginfo("Reached")
             break
-    velocity_message.angular.z = 0
-    velocity_publisher.publish(velocity_message)
+    vel_msg.angular.z = 0
+    velocity_publisher.publish(vel_msg)
     
 
 def go_to_goal(x_goal, y_goal, velocity_publisher): 
@@ -123,7 +126,7 @@ def go_to_goal(x_goal, y_goal, velocity_publisher):
     global y,yaw
 
     loop_rate = rospy.Rate(10)
-    velocity_message = Twist()
+    vel_msg = Twist()
 
     while (True):
         K_linear = 0.5
@@ -134,10 +137,10 @@ def go_to_goal(x_goal, y_goal, velocity_publisher):
         desired_angle_goal = math.atan2(y_goal - y, x_goal-x)
         angular_speed = (desired_angle_goal - yaw)*K_angular
 
-        velocity_message.linear.x = linear_speed
-        velocity_message.angular.z = angular_speed
+        vel_msg.linear.x = linear_speed
+        vel_msg.angular.z = angular_speed
 
-        velocity_publisher.publish(velocity_message)
+        velocity_publisher.publish(vel_msg)
 
         loop_rate.sleep()
 
@@ -199,10 +202,10 @@ if __name__ == '__main__' :
         position_topic = '/turtle1/pose'
         pose_subscriber = rospy.Subscriber(position_topic,Pose,poseCallback)
 
-        # move(1.0, 4.0, 1, velocity_publisher)
+        move(1.0, 4.0, 1, velocity_publisher)
         # rotate(10, 80, 1, velocity_publisher)
         #go_to_goal(1, 2, velocity_publisher)
-        gridClean()
+        # gridClean()
 
         time.sleep(2)
 
