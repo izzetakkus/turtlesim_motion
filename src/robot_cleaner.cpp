@@ -294,7 +294,6 @@ void gridClean(){
 void spiralClean(){
 
     geometry_msgs::Twist vel_msg;
-    double count = 0.0;
 
     double constant_speed = 4;
     double rk = 0.5;

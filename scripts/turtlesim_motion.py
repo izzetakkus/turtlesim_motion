@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from asyncore import loop
 from turtle import distance
 import rospy
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 import math
 import time
+import numpy as np
 
 x = 0
 y = 0
@@ -163,32 +165,70 @@ def gridClean():
 
     go_to_goal(x_goal,y_goal,velocity_publisher)
     loop_rate.sleep()
-    setDesiredOrientation(0,velocity_publisher)
+    setDesiredOrientation(np.deg2rad(0),velocity_publisher)
     loop_rate.sleep()
 
+    move(2.0,9.0,True,velocity_publisher)
+    loop_rate.sleep()
+    rotate(np.deg2rad(10),np.deg2rad(90),False,velocity_publisher)
+    loop_rate.sleep()
     move(2,9,True,velocity_publisher)
-    loop_rate.sleep()
-    rotate(10,90,False,velocity_publisher)
-    loop_rate.sleep()
-    move(2,9,True,velocity_publisher)
 
-
-    rotate(10,90,False,velocity_publisher)
+    rotate(np.deg2rad(10),np.deg2rad(90),False,velocity_publisher)
     loop_rate.sleep()
     move(2,1,True,velocity_publisher)
-    rotate(10,90,False,velocity_publisher)
+    rotate(np.deg2rad(10),np.deg2rad(90),False,velocity_publisher)
     loop_rate.sleep()
     move(2,9,True,velocity_publisher)
 
 
-    rotate(30,90,True,velocity_publisher)
+    rotate(np.deg2rad(30),np.deg2rad(90),True,velocity_publisher)
     loop_rate.sleep()
     move(2,1,True,velocity_publisher)
-    rotate(30,90,True,velocity_publisher)
+    rotate(np.deg2rad(30),np.deg2rad(90),True,velocity_publisher)
     loop_rate.sleep()
     move(2,9,True,velocity_publisher)
 
-    distance = getDistance(x,y,x_max,y_max)
+
+def spiralClean():
+
+
+    velocity_topic = '/turtle1/cmd_vel'
+    velocity_publisher = rospy.Publisher(velocity_topic,Twist,queue_size=10)
+
+
+    vel_msg = Twist()
+    constant_speed = 4
+    rk = 0.5
+    loop_rate = rospy.Rate(1)
+
+    while(True):
+
+        rk = rk + 0.5
+        vel_msg.linear.x = rk
+        vel_msg.linear.y = 0
+        vel_msg.linear.z = 0
+
+        vel_msg.angular.x = 0;
+        vel_msg.angular.y = 0;
+        vel_msg.angular.z = constant_speed
+
+        print("Linear Velocity: %.2f "%vel_msg.linear.x)
+        print("\nAngular Velocity: %.2f "%vel_msg.angular.z)
+
+        velocity_publisher.publish(vel_msg)
+        rospy.spin()
+        loop_rate.sleep()
+
+
+        if x > 10.5 or y > 10.5:
+            break
+
+    vel_msg.linear.x = 0
+    velocity_publisher.publish(vel_msg)
+
+
+
 
 
 if __name__ == '__main__' :
@@ -201,11 +241,23 @@ if __name__ == '__main__' :
 
         position_topic = '/turtle1/pose'
         pose_subscriber = rospy.Subscriber(position_topic,Pose,poseCallback)
+        loop_rate = rospy.Rate(10)
 
-        move(1.0, 4.0, 1, velocity_publisher)
+        # move(1.0, 4.0, 1, velocity_publisher)
         # rotate(10, 80, 1, velocity_publisher)
-        #go_to_goal(1, 2, velocity_publisher)
+        # go_to_goal(1, 2, velocity_publisher)
+
+        # setDesiredOrientation(np.deg2rad(120), velocity_publisher);
+        # loop_rate = rospy.Rate(10)
+        # loop_rate.sleep();
+        # setDesiredOrientation(np.deg2rad(-60), velocity_publisher);
+        # loop_rate.sleep();
+        # setDesiredOrientation(np.deg2rad(0), velocity_publisher);
+
         # gridClean()
+
+        spiralClean()
+        loop_rate.sleep()
 
         time.sleep(2)
 
