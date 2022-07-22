@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from asyncore import loop
-from turtle import distance
 import rospy
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
@@ -209,15 +207,14 @@ def spiralClean():
         vel_msg.linear.y = 0
         vel_msg.linear.z = 0
 
-        vel_msg.angular.x = 0;
-        vel_msg.angular.y = 0;
+        vel_msg.angular.x = 0
+        vel_msg.angular.y = 0
         vel_msg.angular.z = constant_speed
 
         print("Linear Velocity: %.2f "%vel_msg.linear.x)
         print("\nAngular Velocity: %.2f "%vel_msg.angular.z)
 
         velocity_publisher.publish(vel_msg)
-        rospy.spin()
         loop_rate.sleep()
 
 
