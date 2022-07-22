@@ -240,6 +240,8 @@ if __name__ == '__main__' :
         pose_subscriber = rospy.Subscriber(position_topic,Pose,poseCallback)
         loop_rate = rospy.Rate(10)
 
+
+    
         # move(1.0, 4.0, 1, velocity_publisher)
         # rotate(10, 80, 1, velocity_publisher)
         # go_to_goal(1, 2, velocity_publisher)
@@ -251,9 +253,19 @@ if __name__ == '__main__' :
         # loop_rate.sleep();
         # setDesiredOrientation(np.deg2rad(0), velocity_publisher);
 
-        # gridClean()
 
-        spiralClean()
+        mode = int(input("Select the cleaning mode\n[1] Spiral Cleaning\n[2] Grid Cleaning\n Mode = "))
+
+        while(True):
+            if mode == 1:
+                spiralClean()
+                break
+            elif mode == 2:
+                gridClean()
+                break
+            else:
+                print("You typed an invalid number, please re-type it!")
+
         loop_rate.sleep()
 
         time.sleep(2)
