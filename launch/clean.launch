@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="turtlesim" type="turtlesim_node" name="turtlesim" output="screen"/>e
-    <node pkg="turtlesim_motion" type="turtlesim_motion.py" name="clean_node" output="screen"/>
-    <!-- <node name="robot_cleaner_node" pkg="turtlesim_motion" type="robot_cleaner_node" output="screen"/> -->
+    <!--<node pkg="turtlesim_motion" type="turtlesim_motion.py" name="clean_node" output="screen"/> -->
+    <node name="robot_cleaner_node" pkg="turtlesim_motion" type="robot_cleaner_node" output="screen"/>
     
 </launch>

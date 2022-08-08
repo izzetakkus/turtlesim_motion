@@ -59,7 +59,7 @@ int main(int argc, char  **argv )
 
     ros::Rate loop_rate(10);
 
-    /*
+    
     cout << "Enter the speed: ";
     cin >> speed;
 
@@ -72,7 +72,7 @@ int main(int argc, char  **argv )
 
     move(speed, distance , isForward);
 
-    */
+    
 
     /*
     cout << "Enter the angular velocity (degree/sec): ";
@@ -112,7 +112,7 @@ int main(int argc, char  **argv )
     */
 
     // gridClean();
-    spiralClean();
+    // spiralClean();
     
     return 0;
 }
